@@ -1,0 +1,1 @@
+0 * * * * offlineimap -c /etc/offlineimap/offlineimap.conf -u basic
