@@ -47,7 +47,7 @@ jobs:
         run: |
           source <(./tags.sh "$GITHUB_RUN_ID.$GITHUB_RUN_NUMBER")
           echo "VERSION=$VERSION" | tee -a "$GITHUB_ENV"
-          echo "TAGS=${TAGS:-latest}" | tee -a "$GITHUB_ENV"
+          echo "TAGS=$TAGS" | tee -a "$GITHUB_ENV"
 
       - name: Build container image
         run: |
@@ -55,7 +55,7 @@ jobs:
 
       - name: Container image metadata
         run: |
-          podman image inspect "localhost/$IMAGE:latest"
+          podman image inspect "localhost/$IMAGE:${TAGS%% *}"
 
       - name: Push container image
         uses: redhat-actions/push-to-registry@v2

@@ -11,7 +11,7 @@
 # License-Filename: LICENSE
 
 set -eu -o pipefail
-export LC_ALL=C
+export LC_ALL=C.UTF-8
 
 [ -v CI_TOOLS ] && [ "$CI_TOOLS" == "SGSGermany" ] \
     || { echo "Invalid build environment: Environment variable 'CI_TOOLS' not set or invalid" >&2; exit 1; }
@@ -105,6 +105,11 @@ echo + "rm -rf …/root/.cache/pip" >&2
 rm -rf "$MOUNT/root/.cache/pip"
 
 cleanup "$CONTAINER"
+
+cmd buildah config \
+    --env OFFLINEIMAP_VERSION="$VERSION" \
+    --env OFFLINEIMAP_HASH="$HASH" \
+    "$CONTAINER"
 
 cmd buildah config \
     --volume "/etc/offlineimap" \
