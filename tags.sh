@@ -31,7 +31,7 @@ fi
 
 # use VERSION variable in container.env
 if [ -z "$VERSION" ]; then
-    echo "Unable to read OfflineIMAP version: No version given in 'container.env'" >&2
+    echo "Unable to read OfflineIMAP version: No version specified in 'container.env'" >&2
     exit 1
 elif ! [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)([+~-]|$) ]]; then
     echo "Unable to read OfflineIMAP version: '$VERSION' is no valid version" >&2
