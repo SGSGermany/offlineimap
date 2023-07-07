@@ -41,8 +41,8 @@ rsync -v -rl --exclude '.gitignore' "$BUILD_DIR/src/" "$MOUNT/"
 pkg_install "$CONTAINER" --virtual .run-deps \
     python3
 
-pkg_install "$CONTAINER" --virtual .fetch-deps \
-    py3-pip
+pkg_install "$CONTAINER" \
+    py3-pip@community
 
 cmd buildah config \
     --env PYTHONUSERBASE="/usr/local" \
@@ -99,7 +99,7 @@ pkg_remove "$CONTAINER" \
     .build-deps
 
 pkg_remove "$CONTAINER" \
-    .fetch-deps
+    py3-pip
 
 echo + "rm -rf …/root/.cache/pip" >&2
 rm -rf "$MOUNT/root/.cache/pip"
