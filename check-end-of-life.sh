@@ -25,25 +25,23 @@ source "$CI_TOOLS_PATH/helper/git.sh.inc"
 BUILD_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 source "$BUILD_DIR/container.env"
 
-# request latest version from OfflineIMAP Git repo
-# if the latest version isn't our current version we bail and require a manual update
-echo + "CURRENT_VERSION=\"\$VERSION\"" >&2
-CURRENT_VERSION="$VERSION"
+# request latest commit from OfflineIMAP Git repo
+# if the latest commit isn't our commit we bail and require a manual update
+echo + "CURRENT_COMMIT=\"\$GIT_COMMIT\"" >&2
+CURRENT_COMMIT="$GIT_COMMIT"
 
-VERSION="$(git_latest "$GIT_REPO" "v*.*")"
+COMMIT="$(git_latest_commit "$GIT_REPO")"
 
-if [ -z "$VERSION" ]; then
-    echo "Unable to determine latest OfflineIMAP version" >&2
+if [ -z "$COMMIT" ]; then
+    echo "Unable to determine latest OfflineIMAP commit" >&2
     exit 1
 fi
 
-VERSION="${VERSION#v}"
-
-echo + "[ $(quote "$CURRENT_VERSION") == $(quote "$VERSION") ]" >&2
-if [ "$CURRENT_VERSION" == "$VERSION" ]; then
-    echo "OfflineIMAP $CURRENT_VERSION is the latest version and thus still supported"
+echo + "[ $(quote "$CURRENT_COMMIT") == $(quote "$COMMIT") ]" >&2
+if [ "$CURRENT_COMMIT" == "$COMMIT" ]; then
+    echo "OfflineIMAP $VERSION is the latest version and thus still supported"
 else
-    echo "OfflineIMAP $CURRENT_VERSION has reached its end of life"
-    echo "The latest version $VERSION supersedes version $CURRENT_VERSION"
+    echo "OfflineIMAP $VERSION has reached its end of life"
+    echo "The latest commit $COMMIT supersedes commit $CURRENT_COMMIT"
     exit 1
 fi

@@ -44,10 +44,6 @@ pkg_install "$CONTAINER" --virtual .run-deps \
 pkg_install "$CONTAINER" --virtual .fetch-deps@community \
     py3-pip
 
-cmd buildah config \
-    --env PYTHONUSERBASE="/usr/local" \
-    "$CONTAINER"
-
 pkg_install "$CONTAINER" --virtual .build-deps \
     python3-dev \
     musl-dev \
@@ -69,6 +65,16 @@ if [ "$GIT_COMMIT" != "$HASH" ]; then
 fi
 
 git_ungit "$MOUNT/usr/src/offlineimap" "…/usr/src/offlineimap"
+
+cmd buildah config \
+    --env PYTHONUSERBASE="/usr/local" \
+    "$CONTAINER"
+
+cmd buildah run  "$CONTAINER" -- \
+    pip config set global.root-user-action ignore
+
+cmd buildah run  "$CONTAINER" -- \
+    pip config set global.break-system-packages true
 
 cmd buildah run  "$CONTAINER" -- \
     pip install --user -r "/usr/src/offlineimap/requirements.txt"
