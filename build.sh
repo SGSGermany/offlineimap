@@ -23,6 +23,7 @@ source "$CI_TOOLS_PATH/helper/common.sh.inc"
 source "$CI_TOOLS_PATH/helper/container.sh.inc"
 source "$CI_TOOLS_PATH/helper/container-alpine.sh.inc"
 source "$CI_TOOLS_PATH/helper/git.sh.inc"
+source "$CI_TOOLS_PATH/helper/patch.sh.inc"
 
 BUILD_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 source "$BUILD_DIR/container.env"
@@ -65,6 +66,8 @@ if [ "$GIT_COMMIT" != "$HASH" ]; then
 fi
 
 git_ungit "$MOUNT/usr/src/offlineimap" "…/usr/src/offlineimap"
+
+patch_apply "$CONTAINER" "$BUILD_DIR/patch" "./patch"
 
 cmd buildah config \
     --env PYTHONUSERBASE="/usr/local" \
