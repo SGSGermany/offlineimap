@@ -39,6 +39,12 @@ MOUNT="$(buildah mount "$CONTAINER")"
 echo + "rsync -v -rl --exclude .gitignore ./src/ …/" >&2
 rsync -v -rl --exclude '.gitignore' "$BUILD_DIR/src/" "$MOUNT/"
 
+echo + "rm -f …/etc/crontabs/root" >&2
+rm -f "$MOUNT/etc/crontabs/root"
+
+echo + "rm -rf …/etc/periodic" >&2
+rm -rf "$MOUNT/etc/periodic"
+
 pkg_install "$CONTAINER" --virtual .run-deps \
     python3
 
