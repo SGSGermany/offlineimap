@@ -82,9 +82,6 @@ cmd buildah run  "$CONTAINER" -- \
 cmd buildah run  "$CONTAINER" -- \
     pip install --user "/usr/src/offlineimap/"
 
-echo + "cp …/usr/src/offlineimap/requirements.txt …/usr/share/offlineimap/requirements.txt" >&2
-cp "$MOUNT/usr/src/offlineimap/requirements.txt" "$MOUNT/usr/share/offlineimap/requirements.txt"
-
 echo + "rm -rf …/usr/src/offlineimap" >&2
 rm -rf "$MOUNT/usr/src/offlineimap"
 
