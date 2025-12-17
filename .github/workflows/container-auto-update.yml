@@ -55,7 +55,7 @@ jobs:
 
       - name: Check for updates
         run: |
-          BUILD_ACTION="$(./check-for-updates.sh)"
+          BUILD_ACTION="$(buildah unshare ./check-for-updates.sh)"
           echo "BUILD_ACTION=$BUILD_ACTION" | tee -a "$GITHUB_ENV"
 
       - name: Build container image
