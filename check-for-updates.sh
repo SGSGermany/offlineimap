@@ -32,4 +32,4 @@ TAG="${TAGS%% *}"
 chkupd_baseimage "$REGISTRY/$OWNER/$IMAGE" "$TAG" || exit 0
 
 # check whether Python package upgrades are available
-chkupd_pypi "$REGISTRY/$OWNER/$IMAGE:$TAG" || exit 0
+chkupd_pypi_dependencies "$REGISTRY/$OWNER/$IMAGE:$TAG" || exit 0
