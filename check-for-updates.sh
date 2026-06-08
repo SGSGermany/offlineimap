@@ -27,10 +27,9 @@ BUILD_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 source "$BUILD_DIR/container.env"
 
 TAG="${TAGS%% *}"
-PYPI_PACKAGES=( "offlineimap" )
 
 # check whether the base image was updated
 chkupd_baseimage "$REGISTRY/$OWNER/$IMAGE" "$TAG" || exit 0
 
 # check whether Python package upgrades are available
-chkupd_pypi_dependencies "$REGISTRY/$OWNER/$IMAGE:$TAG" "${PYPI_PACKAGES[@]}" || exit 0
+chkupd_pypi "$REGISTRY/$OWNER/$IMAGE:$TAG" || exit 0

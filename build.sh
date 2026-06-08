@@ -51,30 +51,6 @@ pkg_install "$CONTAINER" --virtual .run-deps \
 pkg_install "$CONTAINER" --virtual .fetch-deps@community \
     py3-pip
 
-pkg_install "$CONTAINER" --virtual .build-deps \
-    python3-dev \
-    musl-dev \
-    gcc \
-    krb5-dev \
-    make
-
-git_clone "$GIT_REPO" "$GIT_REF" \
-    "$MOUNT/usr/src/offlineimap" "…/usr/src/offlineimap"
-
-echo + "HASH=\"\$(git -C …/usr/src/offlineimap rev-parse HEAD)\"" >&2
-HASH="$(git -C "$MOUNT/usr/src/offlineimap" rev-parse HEAD)"
-
-echo + "[ \"\$GIT_COMMIT\" == \"\$HASH\" ]" >&2
-if [ "$GIT_COMMIT" != "$HASH" ]; then
-    echo "Failed to verify source code integrity of OfflineIMAP $VERSION:" \
-        "Expecting Git commit '$GIT_COMMIT', got '$HASH'" >&2
-    exit 1
-fi
-
-git_ungit "$MOUNT/usr/src/offlineimap" "…/usr/src/offlineimap"
-
-patch_apply "$CONTAINER" "$BUILD_DIR/patch" "./patch"
-
 cmd buildah config \
     --env PYTHONUSERBASE="/usr/local" \
     "$CONTAINER"
@@ -85,14 +61,19 @@ cmd buildah run  "$CONTAINER" -- \
 cmd buildah run  "$CONTAINER" -- \
     pip config set global.break-system-packages true
 
-cmd buildah run  "$CONTAINER" -- \
-    pip install --user -r "/usr/src/offlineimap/requirements.txt"
+PYPI_PACKAGE="offlineimap"
+[ -z "$VERSION" ] || PYPI_PACKAGE+="==$VERSION"
 
 cmd buildah run  "$CONTAINER" -- \
-    pip install --user "/usr/src/offlineimap/"
+    pip install --user "$PYPI_PACKAGE"
 
-echo + "rm -rf …/usr/src/offlineimap" >&2
-rm -rf "$MOUNT/usr/src/offlineimap"
+echo + "VERSION=\"\$(buildah run $(quote "$CONTAINER") --" \
+    "pip show offlineimap | sed -ne 's/^Version: \(.*\)$/\1/p')\"" >&2
+VERSION="$(buildah run  "$CONTAINER" -- \
+    pip show offlineimap | sed -ne 's/^Version: \(.*\)$/\1/p')"
+
+echo + "[[ ${VERSION@Q} == $VERSION_PATTERN ]]" >&2
+[[ "$VERSION" == $VERSION_PATTERN ]]
 
 user_add "$CONTAINER" offlineimap 65536 "/var/lib/offlineimap"
 
@@ -104,11 +85,7 @@ cmd buildah run "$CONTAINER" -- \
 
 cmd buildah run "$CONTAINER" -- \
     /bin/sh -c "printf '%s=%s\n' \"\$@\" > /usr/share/offlineimap/version_info" -- \
-        VERSION "$VERSION" \
-        HASH "$HASH"
-
-pkg_remove "$CONTAINER" \
-    .build-deps
+        VERSION "$VERSION"
 
 pkg_remove "$CONTAINER" \
     .fetch-deps
@@ -122,7 +99,6 @@ con_cleanup "$CONTAINER"
 
 cmd buildah config \
     --env OFFLINEIMAP_VERSION="$VERSION" \
-    --env OFFLINEIMAP_HASH="$HASH" \
     "$CONTAINER"
 
 cmd buildah config \

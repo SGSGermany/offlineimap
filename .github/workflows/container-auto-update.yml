@@ -49,10 +49,6 @@ jobs:
           echo "VERSION=$VERSION" | tee -a "$GITHUB_ENV"
           echo "TAGS=$TAGS" | tee -a "$GITHUB_ENV"
 
-      - name: Check end of life
-        run: |
-          ./check-end-of-life.sh
-
       - name: Check for updates
         run: |
           BUILD_ACTION="$(buildah unshare ./check-for-updates.sh)"

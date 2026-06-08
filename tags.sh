@@ -19,6 +19,12 @@ export LC_ALL=C.UTF-8
 [ -v CI_TOOLS_PATH ] && [ -d "$CI_TOOLS_PATH" ] \
     || { echo "Invalid build environment: Environment variable 'CI_TOOLS_PATH' not set or invalid" >&2; exit 1; }
 
+[ -x "$(type -P curl 2>/dev/null)" ] \
+    || { echo "Missing script dependency: curl" >&2; exit 1; }
+
+[ -x "$(type -P jq 2>/dev/null)" ] \
+    || { echo "Missing script dependency: jq" >&2; exit 1; }
+
 source "$CI_TOOLS_PATH/helper/common.sh.inc"
 
 BUILD_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -29,16 +35,22 @@ if [ $# -gt 0 ] && [[ "$1" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
     BUILD_INFO=".${1,,}"
 fi
 
-# use VERSION variable in container.env
+# fetch latest version from PyPi
+PYPI_JSON="$(_curl_json "https://pypi.org/pypi/offlineimap/json" ||:)"
+if [ -z "$PYPI_JSON" ]; then
+    echo "Unable to read OfflineIMAP version: Failed to fetch package information from PyPi" >&2
+    exit 1
+fi
+
+VERSION="$(jq -r '.info.version' <<<"$PYPI_JSON")"
 if [ -z "$VERSION" ]; then
     echo "Unable to read OfflineIMAP version: No version specified in 'container.env'" >&2
     exit 1
-elif ! [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)([+~-]|$) ]]; then
+elif ! [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
     echo "Unable to read OfflineIMAP version: '$VERSION' is no valid version" >&2
     exit 1
 fi
 
-VERSION_FULL="$VERSION"
 VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
 VERSION_MINOR="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
 VERSION_MAJOR="${BASH_REMATCH[1]}"
@@ -53,5 +65,5 @@ TAGS=(
     "latest"
 )
 
-printf 'VERSION="%s"\n' "$VERSION_FULL"
+printf 'VERSION="%s"\n' "$VERSION"
 printf 'TAGS="%s"\n' "${TAGS[*]}"
